@@ -54,9 +54,6 @@ source venv/bin/activate
 
 ## **4. Run the Django Development Server**
 ```bash
-# Navigate to the backend folder
-cd backend
-
 # Run the Django development server
 python manage.py runserver
 ```
