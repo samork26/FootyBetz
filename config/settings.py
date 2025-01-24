@@ -38,7 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'app',
+    'tailwind',
+    'theme',
 ]
+
+TAILWIND_APP_NAME = 'theme'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -55,7 +59,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR.parent / 'frontend/pages'],  # Template directory in the frontend
+        'DIRS': [BASE_DIR.parent / 'templates'],  # Template directory in the frontend
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -120,8 +124,7 @@ STATIC_URL = '/static/'
 
 # Specify the directories for static files (e.g., CSS and JS in frontend/styles)
 STATICFILES_DIRS = [
-    BASE_DIR.parent / 'frontend/styles',  # Tailwind output and other static files
-    BASE_DIR.parent / 'frontend/scripts',  # JS files
+      # Tailwind output and other static files  # JS files
 ]
 
 # Default primary key field type
