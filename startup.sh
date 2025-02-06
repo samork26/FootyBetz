@@ -1,35 +1,41 @@
 #!/bin/bash
 
-# Stop the script on errors
-set -e
-
-echo "🔹 Checking if virtual environment exists..."
-if [ ! -d "venv" ]; then
-    echo "📌 Creating virtual environment..."
-    python3 -m venv env
+# Activate the virtual environment
+if [ -d "venv" ]; then
+    source venv/bin/activate
+else
+    echo "Virtual environment 'venv' not found. Creating one..."
+    python3 -m venv venv
+    source venv/bin/activate
+    echo "Virtual environment 'venv' created and activated."
 fi
 
-echo "🔹 Activating virtual environment..."
-source env/bin/activate
-
-echo "📦 Installing dependencies..."
-pip install -r requirements.txt
-
-echo "🎨 Checking if Tailwind is installed..."
-if ! python -c "import tailwind" 2>/dev/null; then
-    echo "📌 Installing Tailwind..."
-    python manage.py tailwind install
+# Upgrade pip and install dependencies if requirements.txt exists
+if [ -f "requirements.txt" ]; then
+    echo "Installing dependencies..."
+    pip install --upgrade pip
+    pip install -r requirements.txt
+else
+    echo "No requirements.txt found. Skipping dependency installation."
 fi
 
-echo "🎨 Building Tailwind CSS..."
-python manage.py tailwind build
-
-echo "📂 Collecting static files..."
-python manage.py collectstatic --noinput
-
-echo "🔄 Applying database migrations..."
-python manage.py makemigrations
+# Apply migrations
+echo "Applying migrations..."
 python manage.py migrate
 
-echo "🚀 Starting Django server..."
-python manage.py runserver
+# Build Django Tailwind (if applicable)
+if [ -d "theme" ]; then
+    echo "Building Django Tailwind..."
+    python manage.py tailwind install
+    python manage.py tailwind build
+else
+    echo "Tailwind theme directory not found. Skipping Tailwind build."
+fi
+
+# Collect static files
+echo "Collecting static files..."
+python manage.py collectstatic --noinput
+
+# Start Django development server
+echo "Starting Django development server..."
+python manage.py runserver 127.0.0.1:8000
