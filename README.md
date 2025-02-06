@@ -25,3 +25,10 @@ cd <project-folder-name>
 ## 3. Run the start script
 ```bash 
 ./startup.sh 
+```
+---
+
+## 4. To run the server locally
+```bash
+python manage.py runserver
+```
