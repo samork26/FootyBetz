@@ -22,43 +22,6 @@ cd <project-folder-name>
 
 ---
 
-## **3. Set Up the Virtual Environment**
-```bash
-# Create the virtual environment
-python -m venv venv
-
-# Activate the virtual environment
-# On Windows:
-venv\Scripts\activate
-
-# On Mac/Linux:
-source venv/bin/activate
-
-```
-
----
-
-## **4. Install Django** 
-
-1. Install Django using pip:
-   ```bash
-   pip install django
-   ```
-
-2. Verify the installation:
-   ```bash
-   python -m django --version
-   ```
-   This will display the installed Django version.
----
-
-## **4. Run the Django Development Server**
-```bash
-# Run the Django development server
-python manage.py runserver
-```
-
-Open your browser and go to [http://127.0.0.1:8000/](http://127.0.0.1:8000/).
-
----
-
+## 3. Run the start script
+```bash 
+./startup.sh 
