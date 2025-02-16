@@ -14,10 +14,10 @@ Ensure you have the following installed:
 cd path/to/your/folder
 
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/samork26/FootyForecast.git
 
 # Navigate into the project folder
-cd <project-folder-name>
+cd FootyForecast
 ```
 
 ---
