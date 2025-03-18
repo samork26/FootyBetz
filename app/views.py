@@ -107,7 +107,7 @@ def signup_view(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            login(request, user)
             messages.success(request, 'Account created successfully!')
             return redirect('home')
         else:
