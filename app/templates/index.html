@@ -1,15 +1,62 @@
 {% extends "base.html" %}
 
-{% block title %}FootyForecast | Home{% endblock %}
+{% block title %}FootyFantasy | Home{% endblock %}
 
 {% block content %}
-<div class="text-center">
-    <h2 class="text-4xl font-extrabold text-gray-700">Welcome to FootyForecast</h2>
-    <p class="mt-4 text-lg text-gray-600">
-        Choose your league!
-    </p>
-    <a href="/epl/" class="mt-6 inline-block bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700">
-        English Premier League
-    </a>
+<div class="container mx-auto px-4 py-8">
+    {% if user.is_authenticated %}
+        <h1 class="text-3xl font-bold text-gray-900 mb-6 text-center">Premier League Table</h1>
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pos</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Team</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">P</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">W</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">D</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">L</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">GF</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">GA</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">GD</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Pts</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for standing in standings %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ standing.position }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-8 w-8">
+                                    <img class="h-8 w-8 rounded-full" src="{{ standing.team.logo_url }}" alt="{{ standing.team.name }}">
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">{{ standing.team.name }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">{{ standing.played_games }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">{{ standing.won }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">{{ standing.draw }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">{{ standing.lost }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">{{ standing.goals_for }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">{{ standing.goals_against }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">{{ standing.goal_difference }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-gray-900">{{ standing.points }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">Welcome to FootyFantasy</h1>
+            <p class="text-xl text-gray-600 mb-8">Your Premier League companion for matches, odds, and more!</p>
+            <a href="{% url 'login' %}" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-300">
+                Login to Get Started
+            </a>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

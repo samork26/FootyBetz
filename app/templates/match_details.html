@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load tz %}
+
+{% block title %}FootyFantasy | {{ match.home_team.name }} vs {{ match.away_team.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div class="p-6">
+            <div class="text-center mb-6">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Match Details</h1>
+                <p class="text-lg text-gray-600">Matchweek {{ match.matchweek }}</p>
+            </div>
+
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center space-x-4">
+                    <img src="{{ match.home_team.logo_url }}" alt="{{ match.home_team.name }}" class="w-16 h-16 object-contain">
+                    <span class="text-xl font-semibold">{{ match.home_team.name }}</span>
+                </div>
+                
+                <div class="text-center">
+                    {% if match.status == 'live' or match.status == 'finished' %}
+                        <div class="text-3xl font-bold text-gray-900">
+                            {{ match.home_score }} - {{ match.away_score }}
+                        </div>
+                        <div class="text-sm text-gray-500">
+                            {% if match.status == 'live' %}
+                                LIVE
+                            {% else %}
+                                FINISHED
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="text-xl font-bold text-gray-700">vs</div>
+                        <div class="text-sm text-gray-500">{{ match.match_date|timezone:user_timezone|date:"F j, Y g:i A" }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <span class="text-xl font-semibold">{{ match.away_team.name }}</span>
+                    <img src="{{ match.away_team.logo_url }}" alt="{{ match.away_team.name }}" class="w-16 h-16 object-contain">
+                </div>
+            </div>
+
+            {% if match.odds %}
+                <div class="mt-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4 text-center">Match Odds</h2>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="text-center">
+                            <button class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                                {{ match.home_team.name }}
+                            </button>
+                            <p class="mt-2 text-lg font-semibold">{{ match.odds.home_win_odds }}</p>
+                        </div>
+                        <div class="text-center">
+                            <button class="w-full bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-700 transition-colors">
+                                Draw
+                            </button>
+                            <p class="mt-2 text-lg font-semibold">{{ match.odds.draw_odds }}</p>
+                        </div>
+                        <div class="text-center">
+                            <button class="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition-colors">
+                                {{ match.away_team.name }}
+                            </button>
+                            <p class="mt-2 text-lg font-semibold">{{ match.odds.away_win_odds }}</p>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center mt-8">
+                    <p class="text-lg text-gray-600">Odds are not available for this match yet.</p>
+                </div>
+            {% endif %}
+
+            <div class="mt-8 text-center">
+                <a href="{% url 'epl' %}" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                    Back to Matches
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

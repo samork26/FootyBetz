@@ -1,23 +1,61 @@
 {% extends "base.html" %}
+{% load tz %}
 
-{% block title %}English Premier League{% endblock %}
+{% block title %}FootyFantasy | Premier League{% endblock %}
 
 {% block content %}
-<div class="text-center">
-    <h2 class="text-4xl font-extrabold text-gray-700">English Premier League</h2>
-    <p class="mt-4 text-lg text-gray-600">
-        Placeholder
-    </p>
-    <p class="mt-4 text-lg text-gray-600">
-        Placeholder:
-    </p>
-    <ul class="list-disc list-inside mt-4 text-gray-600">
-        <li>Placeholder</li>
-        <li>Placeholder</li>
-        <li>Placeholder</li>
-    </ul>
-    <a href="/" class="mt-6 inline-block bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700">
-        Home
-    </a>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">Premier League Matches</h1>
+        <p class="text-lg text-gray-600">Upcoming matches in the English Premier League</p>
+    </div>
+
+    {% if matches %}
+        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {% for match in matches %}
+                <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+                    <div class="p-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-sm font-semibold text-blue-600">Matchweek {{ match.matchweek }}</span>
+                            <span class="text-sm text-gray-500">{{ match.match_date|timezone:user_timezone|date:"F j, Y" }}</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-3 flex-1">
+                                <img src="{{ match.home_team.logo_url }}" alt="{{ match.home_team.name }}" class="w-12 h-12 object-contain flex-shrink-0">
+                                <div class="text-center w-full">
+                                    <span class="font-semibold text-gray-900 break-words">{{ match.home_team.name }}</span>
+                                </div>
+                            </div>
+                            <div class="flex-shrink-0 mx-4">
+                                <span class="text-xl font-bold text-gray-700">vs</span>
+                            </div>
+                            <div class="flex items-center space-x-3 flex-1">
+                                <div class="text-center w-full">
+                                    <span class="font-semibold text-gray-900 break-words">{{ match.away_team.name }}</span>
+                                </div>
+                                <img src="{{ match.away_team.logo_url }}" alt="{{ match.away_team.name }}" class="w-12 h-12 object-contain flex-shrink-0">
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center text-sm text-gray-500 mb-4">
+                            <span class="truncate">{{ match.venue }}</span>
+                            <span>{{ match.match_date|timezone:user_timezone|time:"g:i A" }}</span>
+                        </div>
+
+                        <div class="text-center">
+                            <a href="{% url 'match_details' match.id %}" class="inline-block bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition-colors">
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-12">
+            <p class="text-xl text-gray-600">No upcoming matches found.</p>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
