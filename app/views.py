@@ -76,30 +76,36 @@ def logout_view(request):
 def match_details(request, match_id):
     try:
         match = Match.objects.get(id=match_id)
-        service = FootballDataService()
+        user_timezone = request.session.get('user_timezone', 'UTC')
         
-        # Try to get existing odds
-        try:
-            odds = match.odds
-        except Match.odds.RelatedObjectDoesNotExist:
+        # Get odds for this specific match
+        football_service = FootballDataService()
+        odds_data = football_service.get_odds_for_match(match)
+        
+        if odds_data:
+            # Update or create odds for this match
+            odds, created = MatchOdds.objects.update_or_create(
+                match=match,
+                defaults={
+                    'home_win_odds': odds_data.get('home_win_odds'),
+                    'draw_odds': odds_data.get('draw_odds'),
+                    'away_win_odds': odds_data.get('away_win_odds')
+                }
+            )
+        else:
             odds = None
-        
-        # If no odds exist, fetch them
-        if not odds:
-            print(f"Fetching odds for match: {match}")
-            odds = service.fetch_odds(match)
-        
-        # Set timezone to EST
-        est = pytz_timezone('America/New_York')
         
         context = {
             'match': match,
-            'odds': odds,
-            'user_timezone': est,
+            'user_timezone': user_timezone,
+            'odds': odds
         }
         return render(request, 'match_details.html', context)
     except Match.DoesNotExist:
         messages.error(request, 'Match not found.')
+        return redirect('epl')
+    except Exception as e:
+        messages.error(request, f'Error loading match details: {str(e)}')
         return redirect('epl')
 
 def signup_view(request):
