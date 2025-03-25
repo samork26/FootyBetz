@@ -25,10 +25,15 @@
                 </div>
                 <div class="flex items-center">
                     {% if user.is_authenticated %}
-                        <span class="text-white mr-4">Welcome, {{ user.username }}</span>
-                        <a href="{% url 'logout' %}" class="text-white hover:text-blue-100">Logout</a>
+                        <div class="flex items-center space-x-4">
+                            <span class="text-white font-semibold">Points: {{ user.userpoints.points }}</span>
+                            <a href="{% url 'logout' %}" class="text-white hover:text-gray-300">Sign Out</a>
+                        </div>
                     {% else %}
-                        <a href="{% url 'login' %}" class="text-white hover:text-blue-100">Login</a>
+                        <div class="flex items-center space-x-4">
+                            <a href="{% url 'login' %}" class="text-white hover:text-gray-300">Sign In</a>
+                            <a href="{% url 'signup' %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Sign Up</a>
+                        </div>
                     {% endif %}
                 </div>
             </div>

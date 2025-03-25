@@ -1,11 +1,11 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.utils.timezone import get_current_timezone
 from pytz import timezone as pytz_timezone
-from .models import Match, MatchOdds, LeagueTable, Team
+from .models import Match, MatchOdds, LeagueTable, Team, UserPoints, Bet
 from .services import FootballDataService
 import os
 from django.contrib.auth.forms import UserCreationForm
@@ -13,6 +13,9 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth import logout
 from django.urls import reverse
+from django.db import transaction
+from decimal import Decimal
+from decimal import InvalidOperation
 
 def home(request):
     if request.user.is_authenticated:
@@ -73,40 +76,87 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
+@login_required
 def match_details(request, match_id):
-    try:
-        match = Match.objects.get(id=match_id)
-        user_timezone = request.session.get('user_timezone', 'UTC')
+    match = get_object_or_404(Match, id=match_id)
+    
+    # Get or create user points
+    user_points, created = UserPoints.objects.get_or_create(user=request.user)
+    
+    # Get user's bet for this match if it exists
+    user_bet = Bet.objects.filter(user=request.user, match=match).first()
+    
+    # Handle betting POST request
+    if request.method == 'POST':
+        # Check if match has started
+        if match.status != 'scheduled':
+            messages.error(request, 'Betting is closed for this match.')
+            return redirect('match_details', match_id=match_id)
         
-        # Get odds for this specific match
+        # Check if user already has a bet
+        if user_bet:
+            messages.error(request, 'You have already placed a bet on this match.')
+            return redirect('match_details', match_id=match_id)
+        
+        bet_type = request.POST.get('bet_type')
+        try:
+            amount = Decimal(request.POST.get('amount', 0))
+        except (ValueError, TypeError, InvalidOperation):
+            messages.error(request, 'Invalid bet amount.')
+            return redirect('match_details', match_id=match_id)
+        
+        # Validate bet amount
+        if amount <= 0:
+            messages.error(request, 'Bet amount must be greater than 0.')
+            return redirect('match_details', match_id=match_id)
+        
+        if amount > user_points.points:
+            messages.error(request, 'You do not have enough points for this bet.')
+            return redirect('match_details', match_id=match_id)
+        
+        # Calculate potential winnings before creating the bet
+        if bet_type == 'home_win':
+            potential_winnings = amount * match.odds.home_win_odds
+        elif bet_type == 'away_win':
+            potential_winnings = amount * match.odds.away_win_odds
+        else:  # draw
+            potential_winnings = amount * match.odds.draw_odds
+        
+        # Create bet with calculated potential winnings
+        with transaction.atomic():
+            bet = Bet.objects.create(
+                user=request.user,
+                match=match,
+                bet_type=bet_type,
+                amount=amount,
+                potential_winnings=potential_winnings
+            )
+            
+            # Deduct points from user
+            user_points.points -= amount
+            user_points.save()
+        
+        messages.success(request, f'Bet placed successfully! Potential winnings: {bet.potential_winnings:.2f} points')
+        return redirect('match_details', match_id=match_id)
+    
+    # Get odds for the match
+    if not match.odds:
         football_service = FootballDataService()
         odds_data = football_service.get_odds_for_match(match)
-        
         if odds_data:
-            # Update or create odds for this match
-            odds, created = MatchOdds.objects.update_or_create(
+            match.odds = MatchOdds.objects.create(
                 match=match,
-                defaults={
-                    'home_win_odds': odds_data.get('home_win_odds'),
-                    'draw_odds': odds_data.get('draw_odds'),
-                    'away_win_odds': odds_data.get('away_win_odds')
-                }
+                home_win_odds=odds_data['home_win_odds'],
+                away_win_odds=odds_data['away_win_odds'],
+                draw_odds=odds_data['draw_odds']
             )
-        else:
-            odds = None
-        
-        context = {
-            'match': match,
-            'user_timezone': user_timezone,
-            'odds': odds
-        }
-        return render(request, 'match_details.html', context)
-    except Match.DoesNotExist:
-        messages.error(request, 'Match not found.')
-        return redirect('epl')
-    except Exception as e:
-        messages.error(request, f'Error loading match details: {str(e)}')
-        return redirect('epl')
+    
+    context = {
+        'match': match,
+        'user_points': user_points,
+        'user_bet': user_bet,
+    }
+    return render(request, 'match_details.html', context)
 
 def signup_view(request):
     if request.method == 'POST':
