@@ -12,16 +12,27 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 flex flex-col min-h-screen">
+<body class="min-h-screen flex flex-col bg-gray-100">
     <!-- Navigation Bar -->
-    <nav class="bg-blue-600 text-white shadow-lg">
+    <nav class="bg-blue-600 shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex-shrink-0">
-                    <a href="/" class="text-xl font-bold">FootyFantasy</a>
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <a href="{% url 'home' %}" class="text-2xl font-bold text-white">FootyFantasy</a>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="{% url 'home' %}" class="inline-flex items-center px-1 pt-1 text-white hover:text-blue-100">Home</a>
+                        <a href="{% url 'epl' %}" class="inline-flex items-center px-1 pt-1 text-white hover:text-blue-100">EPL</a>
+                    </div>
                 </div>
-                <div>
-                    <a href="{% url 'signup' %}" class="bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors font-medium">Sign Up</a>
+                <div class="flex items-center">
+                    {% if user.is_authenticated %}
+                        <span class="text-white mr-4">Welcome, {{ user.username }}</span>
+                        <a href="{% url 'logout' %}" class="text-white hover:text-blue-100">Logout</a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="text-white hover:text-blue-100">Login</a>
+                    {% endif %}
                 </div>
             </div>
         </div>
