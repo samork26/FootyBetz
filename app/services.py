@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 class FootballDataService:
     BASE_URL = "http://api.football-data.org/v4"
-    #ODDS_API_KEY = "8bd4cf8687f52a1a48641734c3126a8b"
     ODDS_BASE_URL = "https://api.the-odds-api.com/v4/sports"
     
     def __init__(self):
