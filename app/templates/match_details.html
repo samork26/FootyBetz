@@ -31,8 +31,14 @@
                             {% endif %}
                         </div>
                     {% else %}
-                        <div class="text-xl font-bold text-gray-700">vs</div>
-                        <div class="text-sm text-gray-500">{{ match.match_date|timezone:user_timezone|date:"F j, Y g:i A" }}</div>
+                        <div class="text-center">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-4">{{ match.home_team.name }} vs {{ match.away_team.name }}</h2>
+                            <p class="text-gray-600 mb-4">
+                                {{ match.match_date|date:"F j, Y" }} at 
+                                {{ match.match_date|timezone:"America/New_York"|date:"g:i A" }} EST
+                            </p>
+                            <p class="text-gray-600 mb-4">{{ match.venue }}</p>
+                        </div>
                     {% endif %}
                 </div>
 
@@ -44,7 +50,7 @@
 
             {% if match.odds %}
                 <div class="mt-8">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4 text-center">Match Odds</h2>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4 text-center">FanDuel Odds</h2>
                     <div class="grid grid-cols-3 gap-4">
                         <div class="text-center">
                             <button class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors">
