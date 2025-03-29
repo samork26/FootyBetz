@@ -2,7 +2,7 @@ import os
 import requests
 from datetime import datetime, timedelta
 from django.utils import timezone
-from .models import Team, Match, MatchOdds, LeagueTable
+from ..models import Team, Match, MatchOdds, LeagueTable
 import logging
 
 logger = logging.getLogger(__name__)
