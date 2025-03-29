@@ -82,23 +82,10 @@ def match_details(request, match_id):
         football_service = FootballDataService()
         odds_data = football_service.get_odds_for_match(match)
         
-        if odds_data:
-            # Update or create odds for this match
-            odds, created = MatchOdds.objects.update_or_create(
-                match=match,
-                defaults={
-                    'home_win_odds': odds_data.get('home_win_odds'),
-                    'draw_odds': odds_data.get('draw_odds'),
-                    'away_win_odds': odds_data.get('away_win_odds')
-                }
-            )
-        else:
-            odds = None
-        
         context = {
             'match': match,
             'user_timezone': user_timezone,
-            'odds': odds
+            'odds': odds_data
         }
         return render(request, 'match_details.html', context)
     except Match.DoesNotExist:
