@@ -79,6 +79,14 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
+# Additional settings for allauth
+ACCOUNT_EMAIL_REQUIRED = False  # Only required for social accounts
+ACCOUNT_USERNAME_REQUIRED = True  # Required for regular login
+ACCOUNT_AUTHENTICATION_METHOD = 'username'  # Use username for regular login
+SOCIALACCOUNT_EMAIL_REQUIRED = True  # Required for social accounts
+SOCIALACCOUNT_QUERY_EMAIL = True
+SOCIALACCOUNT_AUTO_SIGNUP = True
+
 # Login/Logout URLs
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
