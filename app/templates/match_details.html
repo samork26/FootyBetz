@@ -71,6 +71,33 @@
                         </div>
                     </div>
 
+                    <!-- Arbitrage Section -->
+                    {% if odds.arbitrage.exists %}
+                        <div class="bg-green-50 p-6 rounded-lg mb-8">
+                            <h3 class="text-xl font-bold text-green-900 mb-4">Arbitrage Opportunity Available!</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-white p-4 rounded-lg">
+                                    <h4 class="text-lg font-semibold text-green-800 mb-2">Home Win Bet</h4>
+                                    <p class="text-sm text-green-700">Bookmaker: {{ odds.arbitrage.home_bookmaker }}</p>
+                                    <p class="text-2xl font-bold text-green-600">${{ odds.arbitrage.home_stake }}</p>
+                                    <p class="text-sm text-green-700">Potential Profit: ${{ odds.arbitrage.home_profit }}</p>
+                                </div>
+                                <div class="bg-white p-4 rounded-lg">
+                                    <h4 class="text-lg font-semibold text-green-800 mb-2">Away Win Bet</h4>
+                                    <p class="text-sm text-green-700">Bookmaker: {{ odds.arbitrage.away_bookmaker }}</p>
+                                    <p class="text-2xl font-bold text-green-600">${{ odds.arbitrage.away_stake }}</p>
+                                    <p class="text-sm text-green-700">Potential Profit: ${{ odds.arbitrage.away_profit }}</p>
+                                </div>
+                            </div>
+                            <p class="text-sm text-green-700 mt-4">Total Investment: $1000</p>
+                        </div>
+                    {% else %}
+                        <div class="bg-gray-50 p-4 rounded-lg mb-8">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">No Arbitrage Opportunity</h3>
+                            <p class="text-gray-700">Total implied probability: {{ odds.arbitrage.total_probability }}%</p>
+                        </div>
+                    {% endif %}
+
                     <!-- Odds Table -->
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">

@@ -246,10 +246,6 @@ class FootballDataService:
                 'commenceTimeTo': end_time_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
             }
             
-            logger.info(f"Fetching events for match: {match.home_team.name} vs {match.away_team.name}")
-            logger.info(f"Match time (EST): {match_time_est.strftime('%Y-%m-%d %I:%M %p %Z')}")
-            logger.info(f"Time window (EST): {start_time.strftime('%Y-%m-%d %I:%M %p %Z')} to {end_time.strftime('%Y-%m-%d %I:%M %p %Z')}")
-            
             event_response = requests.get(event_url, params=event_params)
             event_response.raise_for_status()
             events = event_response.json()
@@ -301,7 +297,8 @@ class FootballDataService:
                     'home_win': {'odds': 0, 'bookmaker': None},
                     'away_win': {'odds': 0, 'bookmaker': None},
                     'draw': {'odds': 0, 'bookmaker': None}
-                }
+                },
+                'arbitrage': None
             }
 
             # Process each bookmaker's odds
@@ -349,6 +346,45 @@ class FootballDataService:
                             'odds': bookmaker_odds['draw'],
                             'bookmaker': bookmaker['title']
                         }
+
+            # Calculate arbitrage opportunity
+            home_odds = odds_structure['best_odds']['home_win']['odds']
+            away_odds = odds_structure['best_odds']['away_win']['odds']
+            
+            # Calculate implied probabilities
+            home_prob = 1 / home_odds
+            away_prob = 1 / away_odds
+            
+            # Sum of probabilities
+            total_prob = home_prob + away_prob
+            
+            # If total probability is less than 1, there's an arbitrage opportunity
+            if total_prob < 1:
+                # Calculate stakes for $1000 total bet
+                total_bankroll = 1000
+                arb_sum = total_prob
+                
+                home_stake = round((total_bankroll * home_prob) / arb_sum, 2)
+                away_stake = round((total_bankroll * away_prob) / arb_sum, 2)
+                
+                # Calculate potential profit
+                home_profit = round(home_stake * home_odds - total_bankroll, 2)
+                away_profit = round(away_stake * away_odds - total_bankroll, 2)
+                
+                odds_structure['arbitrage'] = {
+                    'exists': True,
+                    'home_stake': home_stake,
+                    'away_stake': away_stake,
+                    'home_profit': home_profit,
+                    'away_profit': away_profit,
+                    'home_bookmaker': odds_structure['best_odds']['home_win']['bookmaker'],
+                    'away_bookmaker': odds_structure['best_odds']['away_win']['bookmaker']
+                }
+            else:
+                odds_structure['arbitrage'] = {
+                    'exists': False,
+                    'total_probability': round(total_prob * 100, 2)
+                }
 
             return odds_structure
 
