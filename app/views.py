@@ -3,7 +3,6 @@ from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from django.utils.timezone import get_current_timezone
 from pytz import timezone as pytz_timezone
 from .models import Match, MatchOdds, LeagueTable, Team, UserPoints, Bet
 from .services import FootballDataService
@@ -12,7 +11,6 @@ from django.contrib.auth.forms import UserCreationForm
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth import logout
-from django.urls import reverse
 from django.db import transaction
 from decimal import Decimal
 from decimal import InvalidOperation
