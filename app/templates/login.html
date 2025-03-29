@@ -28,7 +28,7 @@
                 </div>
                 <div class="flex items-center">
                     {% if user.is_authenticated %}
-                        <span class="text-white mr-4">Welcome, {{ user.username }}</span>
+                        <span class="text-white mr-4">Welcome, {{ user.email }}</span>
                         <a href="{% url 'logout' %}" class="text-white hover:text-blue-100">Logout</a>
                     {% else %}
                         <a href="{% url 'login' %}" class="text-white hover:text-blue-100">Login</a>
@@ -57,7 +57,7 @@
                 {% endif %}
 
                 <!-- Google OAuth Button -->
-                <a href="{% provider_login_url 'google' %}" class="w-full mb-6">
+                <a href="{% provider_login_url 'google' process='login' %}" class="w-full mb-6">
                     <button class="w-full bg-white text-gray-800 py-3 px-4 rounded-lg border border-gray-300 hover:bg-gray-50 flex items-center justify-center shadow-sm">
                         <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
                             <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -79,12 +79,12 @@
                     {% csrf_token %}
                     
                     <div class="mb-4">
-                        <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
                         <input
-                            type="text"
-                            name="username"
-                            id="username"
-                            placeholder="Enter your username"
+                            type="email"
+                            name="login"
+                            id="email"
+                            placeholder="Enter your email"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             required
                         />
