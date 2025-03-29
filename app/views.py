@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from pytz import timezone as pytz_timezone
 from .models import Match, MatchOdds, LeagueTable, Team, UserPoints, Bet
-from .services.services import FootballDataService
+from .services.football_data_service import FootballDataService
 import os
 from django.contrib.auth.forms import UserCreationForm
 from django.http import JsonResponse
