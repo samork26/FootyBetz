@@ -219,6 +219,13 @@ class FootballDataService:
             print(f"Error fetching league table: {e}")
             return False
 
+    def convert_to_american_odds(self, decimal_odds):
+        """Convert decimal odds to American odds"""
+        if decimal_odds >= 2.00:
+            return round((decimal_odds - 1) * 100)
+        else:
+            return round(-100 / (decimal_odds - 1))
+
     def get_odds_for_match(self, match):
         """Get odds for a specific match from The Odds API"""
         try:
@@ -294,9 +301,9 @@ class FootballDataService:
             odds_structure = {
                 'bookmakers': [],
                 'best_odds': {
-                    'home_win': {'odds': 0, 'bookmaker': None},
-                    'away_win': {'odds': 0, 'bookmaker': None},
-                    'draw': {'odds': 0, 'bookmaker': None}
+                    'home_win': {'decimal': 0, 'american': 0, 'bookmaker': None},
+                    'away_win': {'decimal': 0, 'american': 0, 'bookmaker': None},
+                    'draw': {'decimal': 0, 'american': 0, 'bookmaker': None}
                 },
                 'arbitrage': None
             }
@@ -305,9 +312,9 @@ class FootballDataService:
             for bookmaker in odds_data['bookmakers']:
                 bookmaker_odds = {
                     'name': bookmaker['title'],
-                    'home_win': None,
-                    'away_win': None,
-                    'draw': None
+                    'home_win': {'decimal': None, 'american': None},
+                    'away_win': {'decimal': None, 'american': None},
+                    'draw': {'decimal': None, 'american': None}
                 }
 
                 # Find the h2h market
@@ -315,41 +322,45 @@ class FootballDataService:
                 if h2h_market and 'outcomes' in h2h_market:
                     for outcome in h2h_market['outcomes']:
                         outcome_name = outcome['name'].lower()
-                        price = outcome['price']
+                        decimal_price = outcome['price']
+                        american_price = self.convert_to_american_odds(decimal_price)
                         
                         if outcome_name == event_home_team:
-                            bookmaker_odds['home_win'] = price
+                            bookmaker_odds['home_win'] = {'decimal': decimal_price, 'american': american_price}
                         elif outcome_name == event_away_team:
-                            bookmaker_odds['away_win'] = price
+                            bookmaker_odds['away_win'] = {'decimal': decimal_price, 'american': american_price}
                         elif outcome_name == 'draw':
-                            bookmaker_odds['draw'] = price
+                            bookmaker_odds['draw'] = {'decimal': decimal_price, 'american': american_price}
 
                 # Only add bookmaker if it has all three outcomes
-                if all(bookmaker_odds[key] is not None for key in ['home_win', 'away_win', 'draw']):
+                if all(bookmaker_odds[key]['decimal'] is not None for key in ['home_win', 'away_win', 'draw']):
                     odds_structure['bookmakers'].append(bookmaker_odds)
                     
                     # Update best odds
-                    if bookmaker_odds['home_win'] > odds_structure['best_odds']['home_win']['odds']:
+                    if bookmaker_odds['home_win']['decimal'] > odds_structure['best_odds']['home_win']['decimal']:
                         odds_structure['best_odds']['home_win'] = {
-                            'odds': bookmaker_odds['home_win'],
+                            'decimal': bookmaker_odds['home_win']['decimal'],
+                            'american': bookmaker_odds['home_win']['american'],
                             'bookmaker': bookmaker['title']
                         }
                     
-                    if bookmaker_odds['away_win'] > odds_structure['best_odds']['away_win']['odds']:
+                    if bookmaker_odds['away_win']['decimal'] > odds_structure['best_odds']['away_win']['decimal']:
                         odds_structure['best_odds']['away_win'] = {
-                            'odds': bookmaker_odds['away_win'],
+                            'decimal': bookmaker_odds['away_win']['decimal'],
+                            'american': bookmaker_odds['away_win']['american'],
                             'bookmaker': bookmaker['title']
                         }
                     
-                    if bookmaker_odds['draw'] > odds_structure['best_odds']['draw']['odds']:
+                    if bookmaker_odds['draw']['decimal'] > odds_structure['best_odds']['draw']['decimal']:
                         odds_structure['best_odds']['draw'] = {
-                            'odds': bookmaker_odds['draw'],
+                            'decimal': bookmaker_odds['draw']['decimal'],
+                            'american': bookmaker_odds['draw']['american'],
                             'bookmaker': bookmaker['title']
                         }
 
             # Calculate arbitrage opportunity
-            home_odds = odds_structure['best_odds']['home_win']['odds']
-            away_odds = odds_structure['best_odds']['away_win']['odds']
+            home_odds = odds_structure['best_odds']['home_win']['decimal']
+            away_odds = odds_structure['best_odds']['away_win']['decimal']
             
             # Calculate implied probabilities
             home_prob = 1 / home_odds

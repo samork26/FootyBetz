@@ -56,17 +56,23 @@
                     <div class="grid grid-cols-3 gap-4 mb-8">
                         <div class="bg-blue-50 p-4 rounded-lg">
                             <h3 class="text-lg font-semibold text-blue-900 mb-2">Best Home Win Odds</h3>
-                            <p class="text-2xl font-bold text-blue-600">{{ odds.best_odds.home_win.odds }}</p>
+                            <p class="text-2xl font-bold {% if odds.best_odds.home_win.american > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                {% if odds.best_odds.home_win.american > 0 %}+{% endif %}{{ odds.best_odds.home_win.american }}
+                            </p>
                             <p class="text-sm text-blue-700">{{ odds.best_odds.home_win.bookmaker }}</p>
                         </div>
                         <div class="bg-gray-50 p-4 rounded-lg">
                             <h3 class="text-lg font-semibold text-gray-900 mb-2">Best Draw Odds</h3>
-                            <p class="text-2xl font-bold text-gray-600">{{ odds.best_odds.draw.odds }}</p>
+                            <p class="text-2xl font-bold {% if odds.best_odds.draw.american > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                {% if odds.best_odds.draw.american > 0 %}+{% endif %}{{ odds.best_odds.draw.american }}
+                            </p>
                             <p class="text-sm text-gray-700">{{ odds.best_odds.draw.bookmaker }}</p>
                         </div>
                         <div class="bg-red-50 p-4 rounded-lg">
                             <h3 class="text-lg font-semibold text-red-900 mb-2">Best Away Win Odds</h3>
-                            <p class="text-2xl font-bold text-red-600">{{ odds.best_odds.away_win.odds }}</p>
+                            <p class="text-2xl font-bold {% if odds.best_odds.away_win.american > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                {% if odds.best_odds.away_win.american > 0 %}+{% endif %}{{ odds.best_odds.away_win.american }}
+                            </p>
                             <p class="text-sm text-red-700">{{ odds.best_odds.away_win.bookmaker }}</p>
                         </div>
                     </div>
@@ -113,9 +119,15 @@
                                 {% for bookmaker in odds.bookmakers %}
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ bookmaker.name }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{{ bookmaker.home_win }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{{ bookmaker.draw }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">{{ bookmaker.away_win }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center {% if bookmaker.home_win.american > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                        {% if bookmaker.home_win.american > 0 %}+{% endif %}{{ bookmaker.home_win.american }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center {% if bookmaker.draw.american > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                        {% if bookmaker.draw.american > 0 %}+{% endif %}{{ bookmaker.draw.american }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center {% if bookmaker.away_win.american > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                        {% if bookmaker.away_win.american > 0 %}+{% endif %}{{ bookmaker.away_win.american }}
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
