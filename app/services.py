@@ -2,7 +2,6 @@ import os
 import requests
 from datetime import datetime, timedelta
 from django.utils import timezone
-from django.conf import settings
 from .models import Team, Match, MatchOdds, LeagueTable
 import logging
 

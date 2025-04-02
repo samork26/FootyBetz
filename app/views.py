@@ -3,16 +3,14 @@ from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from django.utils.timezone import get_current_timezone
 from pytz import timezone as pytz_timezone
-from .models import Match, MatchOdds, LeagueTable, Team
+from .models import Match, LeagueTable, Team
 from .services import FootballDataService
 import os
 from django.contrib.auth.forms import UserCreationForm
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth import logout
-from django.urls import reverse
 
 def home(request):
     if request.user.is_authenticated:
