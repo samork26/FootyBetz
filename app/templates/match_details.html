@@ -48,28 +48,90 @@
                 </div>
             </div>
 
-            {% if match.odds %}
+            {% if odds %}
                 <div class="mt-8">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4 text-center">FanDuel Odds</h2>
-                    <div class="grid grid-cols-3 gap-4">
-                        <div class="text-center">
-                            <button class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors">
-                                {{ match.home_team.name }}
-                            </button>
-                            <p class="mt-2 text-lg font-semibold">{{ match.odds.home_win_odds }}</p>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4 text-center">Match Odds</h2>
+                    
+                    <!-- Best Odds Section -->
+                    <div class="grid grid-cols-3 gap-4 mb-8">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <h3 class="text-lg font-semibold text-blue-900 mb-2">Best Home Win Odds</h3>
+                            <p class="text-2xl font-bold {% if odds.best_odds.home_win.american > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                {% if odds.best_odds.home_win.american > 0 %}+{% endif %}{{ odds.best_odds.home_win.american }}
+                            </p>
+                            <p class="text-sm text-blue-700">{{ odds.best_odds.home_win.bookmaker }}</p>
                         </div>
-                        <div class="text-center">
-                            <button class="w-full bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-700 transition-colors">
-                                Draw
-                            </button>
-                            <p class="mt-2 text-lg font-semibold">{{ match.odds.draw_odds }}</p>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Best Draw Odds</h3>
+                            <p class="text-2xl font-bold {% if odds.best_odds.draw.american > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                {% if odds.best_odds.draw.american > 0 %}+{% endif %}{{ odds.best_odds.draw.american }}
+                            </p>
+                            <p class="text-sm text-gray-700">{{ odds.best_odds.draw.bookmaker }}</p>
                         </div>
-                        <div class="text-center">
-                            <button class="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition-colors">
-                                {{ match.away_team.name }}
-                            </button>
-                            <p class="mt-2 text-lg font-semibold">{{ match.odds.away_win_odds }}</p>
+                        <div class="bg-red-50 p-4 rounded-lg">
+                            <h3 class="text-lg font-semibold text-red-900 mb-2">Best Away Win Odds</h3>
+                            <p class="text-2xl font-bold {% if odds.best_odds.away_win.american > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                {% if odds.best_odds.away_win.american > 0 %}+{% endif %}{{ odds.best_odds.away_win.american }}
+                            </p>
+                            <p class="text-sm text-red-700">{{ odds.best_odds.away_win.bookmaker }}</p>
                         </div>
+                    </div>
+
+                    <!-- Arbitrage Section -->
+                    {% if odds.arbitrage.exists %}
+                        <div class="bg-green-50 p-6 rounded-lg mb-8">
+                            <h3 class="text-xl font-bold text-green-900 mb-4">Arbitrage Opportunity Available!</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-white p-4 rounded-lg">
+                                    <h4 class="text-lg font-semibold text-green-800 mb-2">Home Win Bet</h4>
+                                    <p class="text-sm text-green-700">Bookmaker: {{ odds.arbitrage.home_bookmaker }}</p>
+                                    <p class="text-2xl font-bold text-green-600">${{ odds.arbitrage.home_stake }}</p>
+                                    <p class="text-sm text-green-700">Potential Profit: ${{ odds.arbitrage.home_profit }}</p>
+                                </div>
+                                <div class="bg-white p-4 rounded-lg">
+                                    <h4 class="text-lg font-semibold text-green-800 mb-2">Away Win Bet</h4>
+                                    <p class="text-sm text-green-700">Bookmaker: {{ odds.arbitrage.away_bookmaker }}</p>
+                                    <p class="text-2xl font-bold text-green-600">${{ odds.arbitrage.away_stake }}</p>
+                                    <p class="text-sm text-green-700">Potential Profit: ${{ odds.arbitrage.away_profit }}</p>
+                                </div>
+                            </div>
+                            <p class="text-sm text-green-700 mt-4">Total Investment: $1000</p>
+                        </div>
+                    {% else %}
+                        <div class="bg-gray-50 p-4 rounded-lg mb-8">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">No Arbitrage Opportunity</h3>
+                            <p class="text-gray-700">Total implied probability: {{ odds.arbitrage.total_probability }}%</p>
+                        </div>
+                    {% endif %}
+
+                    <!-- Odds Table -->
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bookmaker</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{{ match.home_team.name }}</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Draw</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{{ match.away_team.name }}</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                {% for bookmaker in odds.bookmakers %}
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ bookmaker.name }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center {% if bookmaker.home_win.american > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                        {% if bookmaker.home_win.american > 0 %}+{% endif %}{{ bookmaker.home_win.american }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center {% if bookmaker.draw.american > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                        {% if bookmaker.draw.american > 0 %}+{% endif %}{{ bookmaker.draw.american }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center {% if bookmaker.away_win.american > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                        {% if bookmaker.away_win.american > 0 %}+{% endif %}{{ bookmaker.away_win.american }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             {% else %}

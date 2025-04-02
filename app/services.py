@@ -219,6 +219,13 @@ class FootballDataService:
             print(f"Error fetching league table: {e}")
             return False
 
+    def convert_to_american_odds(self, decimal_odds):
+        """Convert decimal odds to American odds"""
+        if decimal_odds >= 2.00:
+            return round((decimal_odds - 1) * 100)
+        else:
+            return round(-100 / (decimal_odds - 1))
+
     def get_odds_for_match(self, match):
         """Get odds for a specific match from The Odds API"""
         try:
@@ -246,35 +253,25 @@ class FootballDataService:
                 'commenceTimeTo': end_time_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
             }
             
-            logger.info(f"Fetching events for match: {match.home_team.name} vs {match.away_team.name}")
-            logger.info(f"Match time (EST): {match_time_est.strftime('%Y-%m-%d %I:%M %p %Z')}")
-            logger.info(f"Time window (EST): {start_time.strftime('%Y-%m-%d %I:%M %p %Z')} to {end_time.strftime('%Y-%m-%d %I:%M %p %Z')}")
-            
             event_response = requests.get(event_url, params=event_params)
             event_response.raise_for_status()
             events = event_response.json()
-            logger.info(f"Found {len(events)} events")
 
             # Find the matching event by team names
             event_id = None
             for event in events:
-                # Clean team names for comparison
                 event_home = event['home_team'].lower().strip()
                 event_away = event['away_team'].lower().strip()
                 match_home = match.home_team.name.lower().strip()
                 match_away = match.away_team.name.lower().strip()
                 
-                # Check for partial matches using string containment
                 home_match = match_home in event_home or event_home in match_home
                 away_match = match_away in event_away or event_away in match_away
                 
                 if home_match and away_match:
                     event_id = event['id']
-                    logger.info(f"Found matching event ID: {event_id}")
-                    logger.info(f"Matched teams: {event_home} vs {event_away}")
-                    logger.info(f"Original teams: {match_home} vs {match_away}")
                     break
-            #print(events)
+
             if not event_id:
                 logger.warning(f"No event ID found for match: {match.home_team.name} vs {match.away_team.name}")
                 return None
@@ -285,82 +282,122 @@ class FootballDataService:
                 'apiKey': self.odds_api_key,
                 'regions': 'us',
                 'markets': 'h2h',
-                'oddsFormat': 'decimal',
-                'bookmakers': 'fanduel'
+                'oddsFormat': 'decimal'
             }
 
-            logger.info(f"Fetching odds for event ID: {event_id}")
             odds_response = requests.get(odds_url, params=odds_params)
             odds_response.raise_for_status()
             odds_data = odds_response.json()
-            logger.info(f"Received odds data: {odds_data}")
 
             if not odds_data or 'bookmakers' not in odds_data:
                 logger.warning(f"No odds data found for event ID: {event_id}")
                 return None
 
-            # Extract FanDuel odds
-            fanduel_odds = None
-            for bookmaker in odds_data['bookmakers']:
-                if bookmaker['key'] == 'fanduel':
-                    fanduel_odds = bookmaker
-                    logger.info("Found FanDuel odds")
-                    break
-
-            if not fanduel_odds or 'markets' not in fanduel_odds:
-                logger.warning(f"No FanDuel odds found for event ID: {event_id}")
-                return None
-
-            # Extract the h2h market odds
-            h2h_market = next((market for market in fanduel_odds['markets'] if market['key'] == 'h2h'), None)
-            if not h2h_market or 'outcomes' not in h2h_market:
-                logger.warning(f"No h2h market found for event ID: {event_id}")
-                return None
-
-            # Print raw odds data for debugging
-            logger.info("Raw h2h market outcomes:")
-            for outcome in h2h_market['outcomes']:
-                logger.info(f"Outcome: {outcome['name']}, Price: {outcome['price']}")
-
-            # Create odds dictionary
-            odds_dict = {}
-            
             # Get the event teams from the API response
             event_home_team = odds_data['home_team'].lower()
             event_away_team = odds_data['away_team'].lower()
             
-            logger.info(f"Event teams: {event_home_team} vs {event_away_team}")
-            
-            for outcome in h2h_market['outcomes']:
-                outcome_name = outcome['name'].lower()
-                price = outcome['price']
-                
-                # Log each outcome as we process it
-                logger.info(f"Processing outcome: {outcome_name} with price {price}")
-                
-                # Match based on event teams rather than match teams
-                if outcome_name == event_home_team:
-                    odds_dict['home_win_odds'] = price
-                    logger.info(f"Set home win odds: {price}")
-                elif outcome_name == event_away_team:
-                    odds_dict['away_win_odds'] = price
-                    logger.info(f"Set away win odds: {price}")
-                elif outcome_name == 'draw':
-                    odds_dict['draw_odds'] = price
-                    logger.info(f"Set draw odds: {price}")
+            # Initialize odds structure
+            odds_structure = {
+                'bookmakers': [],
+                'best_odds': {
+                    'home_win': {'decimal': 0, 'american': 0, 'bookmaker': None},
+                    'away_win': {'decimal': 0, 'american': 0, 'bookmaker': None},
+                    'draw': {'decimal': 0, 'american': 0, 'bookmaker': None}
+                },
+                'arbitrage': None
+            }
 
-            # Log final odds dictionary
-            logger.info(f"Final odds dictionary: {odds_dict}")
-            
-            # Verify we have all three outcomes
-            if not all(key in odds_dict for key in ['home_win_odds', 'away_win_odds', 'draw_odds']):
-                logger.warning("Missing some odds outcomes:")
-                logger.warning(f"Home win odds: {'home_win_odds' in odds_dict}")
-                logger.warning(f"Away win odds: {'away_win_odds' in odds_dict}")
-                logger.warning(f"Draw odds: {'draw_odds' in odds_dict}")
-                logger.warning(f"Available outcomes: {[outcome['name'] for outcome in h2h_market['outcomes']]}")
+            # Process each bookmaker's odds
+            for bookmaker in odds_data['bookmakers']:
+                bookmaker_odds = {
+                    'name': bookmaker['title'],
+                    'home_win': {'decimal': None, 'american': None},
+                    'away_win': {'decimal': None, 'american': None},
+                    'draw': {'decimal': None, 'american': None}
+                }
 
-            return odds_dict
+                # Find the h2h market
+                h2h_market = next((market for market in bookmaker['markets'] if market['key'] == 'h2h'), None)
+                if h2h_market and 'outcomes' in h2h_market:
+                    for outcome in h2h_market['outcomes']:
+                        outcome_name = outcome['name'].lower()
+                        decimal_price = outcome['price']
+                        american_price = self.convert_to_american_odds(decimal_price)
+                        
+                        if outcome_name == event_home_team:
+                            bookmaker_odds['home_win'] = {'decimal': decimal_price, 'american': american_price}
+                        elif outcome_name == event_away_team:
+                            bookmaker_odds['away_win'] = {'decimal': decimal_price, 'american': american_price}
+                        elif outcome_name == 'draw':
+                            bookmaker_odds['draw'] = {'decimal': decimal_price, 'american': american_price}
+
+                # Only add bookmaker if it has all three outcomes
+                if all(bookmaker_odds[key]['decimal'] is not None for key in ['home_win', 'away_win', 'draw']):
+                    odds_structure['bookmakers'].append(bookmaker_odds)
+                    
+                    # Update best odds
+                    if bookmaker_odds['home_win']['decimal'] > odds_structure['best_odds']['home_win']['decimal']:
+                        odds_structure['best_odds']['home_win'] = {
+                            'decimal': bookmaker_odds['home_win']['decimal'],
+                            'american': bookmaker_odds['home_win']['american'],
+                            'bookmaker': bookmaker['title']
+                        }
+                    
+                    if bookmaker_odds['away_win']['decimal'] > odds_structure['best_odds']['away_win']['decimal']:
+                        odds_structure['best_odds']['away_win'] = {
+                            'decimal': bookmaker_odds['away_win']['decimal'],
+                            'american': bookmaker_odds['away_win']['american'],
+                            'bookmaker': bookmaker['title']
+                        }
+                    
+                    if bookmaker_odds['draw']['decimal'] > odds_structure['best_odds']['draw']['decimal']:
+                        odds_structure['best_odds']['draw'] = {
+                            'decimal': bookmaker_odds['draw']['decimal'],
+                            'american': bookmaker_odds['draw']['american'],
+                            'bookmaker': bookmaker['title']
+                        }
+
+            # Calculate arbitrage opportunity
+            home_odds = odds_structure['best_odds']['home_win']['decimal']
+            away_odds = odds_structure['best_odds']['away_win']['decimal']
+            
+            # Calculate implied probabilities
+            home_prob = 1 / home_odds
+            away_prob = 1 / away_odds
+            
+            # Sum of probabilities
+            total_prob = home_prob + away_prob
+            
+            # If total probability is less than 1, there's an arbitrage opportunity
+            if total_prob < 1:
+                # Calculate stakes for $1000 total bet
+                total_bankroll = 1000
+                arb_sum = total_prob
+                
+                home_stake = round((total_bankroll * home_prob) / arb_sum, 2)
+                away_stake = round((total_bankroll * away_prob) / arb_sum, 2)
+                
+                # Calculate potential profit
+                home_profit = round(home_stake * home_odds - total_bankroll, 2)
+                away_profit = round(away_stake * away_odds - total_bankroll, 2)
+                
+                odds_structure['arbitrage'] = {
+                    'exists': True,
+                    'home_stake': home_stake,
+                    'away_stake': away_stake,
+                    'home_profit': home_profit,
+                    'away_profit': away_profit,
+                    'home_bookmaker': odds_structure['best_odds']['home_win']['bookmaker'],
+                    'away_bookmaker': odds_structure['best_odds']['away_win']['bookmaker']
+                }
+            else:
+                odds_structure['arbitrage'] = {
+                    'exists': False,
+                    'total_probability': round(total_prob * 100, 2)
+                }
+
+            return odds_structure
 
         except requests.exceptions.RequestException as e:
             logger.error(f"Error fetching odds: {str(e)}")
