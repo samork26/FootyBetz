@@ -12,8 +12,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth import logout
 from django.db import transaction
-from decimal import Decimal
-from decimal import InvalidOperation
+from decimal import Decimal, InvalidOperation
 
 def home(request):
     if request.user.is_authenticated:
@@ -112,13 +111,30 @@ def match_details(request, match_id):
             messages.error(request, 'You do not have enough points for this bet.')
             return redirect('match_details', match_id=match_id)
         
+        # Safely retrieve odds for the match using a try/except block
+        try:
+            odds = match.odds
+        except MatchOdds.DoesNotExist:
+            odds = None
+        
+        if odds is None:
+            football_service = FootballDataService()
+            odds_data = football_service.get_odds_for_match(match)
+            if odds_data:
+                odds = MatchOdds.objects.create(
+                    match=match,
+                    home_win_odds=odds_data['home_win_odds'],
+                    away_win_odds=odds_data['away_win_odds'],
+                    draw_odds=odds_data['draw_odds']
+                )
+        
         # Calculate potential winnings before creating the bet
         if bet_type == 'home_win':
-            potential_winnings = amount * match.odds.home_win_odds
+            potential_winnings = amount * odds.home_win_odds
         elif bet_type == 'away_win':
-            potential_winnings = amount * match.odds.away_win_odds
+            potential_winnings = amount * odds.away_win_odds
         else:  # draw
-            potential_winnings = amount * match.odds.draw_odds
+            potential_winnings = amount * odds.draw_odds
         
         # Create bet with calculated potential winnings
         with transaction.atomic():
@@ -129,7 +145,6 @@ def match_details(request, match_id):
                 amount=amount,
                 potential_winnings=potential_winnings
             )
-            
             # Deduct points from user
             user_points.points -= amount
             user_points.save()
@@ -137,12 +152,17 @@ def match_details(request, match_id):
         messages.success(request, f'Bet placed successfully! Potential winnings: {bet.potential_winnings:.2f} points')
         return redirect('match_details', match_id=match_id)
     
-    # Get odds for the match
-    if not match.odds:
+    # For GET requests, ensure odds exists
+    try:
+        odds = match.odds
+    except MatchOdds.DoesNotExist:
+        odds = None
+
+    if odds is None:
         football_service = FootballDataService()
         odds_data = football_service.get_odds_for_match(match)
         if odds_data:
-            match.odds = MatchOdds.objects.create(
+            odds = MatchOdds.objects.create(
                 match=match,
                 home_win_odds=odds_data['home_win_odds'],
                 away_win_odds=odds_data['away_win_odds'],
