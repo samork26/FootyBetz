@@ -13,10 +13,10 @@ Ensure you have the following installed:
 cd path/to/your/folder
 
 # Clone the repository
-git clone https://github.com/samork26/FootyFantasy.git
+git clone https://github.com/samork26/FootyBetz.git
 
 # Navigate into the project folder
-cd FootyFantasy
+cd FootyBetz
 ```
 ---
 
