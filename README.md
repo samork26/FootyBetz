@@ -57,9 +57,18 @@ python manage.py runserver
 ---
 
 # **Usage of AI**
-Used AI to:
-1. Generate generic templates
+Used ChatGPT 4o and o3-mini-high to:
+1. Generate generic templates (app/templates/...)     
+    Prompt used:   
+    &nbsp;&nbsp;&nbsp;&nbsp;"Can you generate a basic base template using django-tailwind?"  
+    &nbsp;&nbsp;&nbsp;&nbsp;"Can you generate a basic league / match table using django-tailwind" 
 2. Generic Tailwind classes for styling
-3. Ideas for db model setup
-4. Generate the Batch script
-5. Organize our directory effectively
+3. Ideas for db model setup (app/models.py)   
+    Prompt used:    
+    &nbsp;&nbsp;&nbsp;&nbsp;"I have an app that displays EPL matches and what the best betting lines are looking like for each outcome, how could the models look?"
+4. Generate the Batch script (app/startup.bat)    
+    Prompt used:    
+    &nbsp;&nbsp;&nbsp;&nbsp;"I have this script (startup.sh), can you help me make a batch script for windows users?"
+5. Organize our directory effectively    
+    Prompt used:    
+    &nbsp;&nbsp;&nbsp;&nbsp;"How is a django app setup, in terms of directories?"
