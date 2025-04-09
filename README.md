@@ -61,7 +61,7 @@ Used ChatGPT 4o and o3-mini-high to:
 1. Generate generic templates (app/templates/...)     
     Prompt used:   
     &nbsp;&nbsp;&nbsp;&nbsp;"Can you generate a basic base template using django-tailwind?"  
-    &nbsp;&nbsp;&nbsp;&nbsp;"Can you generate a basic league / match table using django-tailwind" 
+    &nbsp;&nbsp;&nbsp;&nbsp;"Can you generate a basic league / match table using django-tailwind?" 
 2. Generic Tailwind classes for styling
 3. Ideas for db model setup (app/models.py)   
     Prompt used:    
