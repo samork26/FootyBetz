@@ -23,6 +23,7 @@ cd FootyBetz
 ```bash 
 touch .env
 ```
+Please be sure to not commit this file! ^
 ---
 
 ## 4a. Run the start script - for Linux/MacOS
