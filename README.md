@@ -23,6 +23,21 @@ cd FootyBetz
 ```bash 
 touch .env
 ```
+```
+Google OAuth2 credentials
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
+Django settings
+DEBUG=True
+SECRET_KEY=
+
+Football Data API Key
+FOOTBALL_DATA_API_KEY=
+
+The Odds API Key
+ODDS_API_KEY=
+```
 Please be sure to not commit this file! ^
 ---
 
